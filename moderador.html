@@ -253,7 +253,8 @@
       const musicAudio = new Audio();
       musicAudio.loop = false;
       musicAudio.volume = 0.34;
-      const MUSIC_REPO_API = "https://api.github.com/repos/rmbcom/sounds/contents";
+      const MUSIC_REPO_API = "https://api.github.com/repos/rmbcom/sounds/git/trees/main?recursive=1";
+      const MUSIC_RAW_BASE = "https://raw.githubusercontent.com/rmbcom/sounds/main/";
       const AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".aac"];
 
       function getAudio() {
@@ -297,20 +298,29 @@
       }
 
       async function loadPlaylist() {
+        messageText.textContent = "Buscando canciones en rmbcom/sounds...";
         const response = await fetch(MUSIC_REPO_API, { cache: "no-store" });
         if (!response.ok) {
-          throw new Error("No se pudo leer el repositorio de sonidos.");
+          throw new Error(`No se pudo leer rmbcom/sounds. Error ${response.status}.`);
         }
 
-        const files = await response.json();
+        const data = await response.json();
+        const files = data.tree || [];
         playlist = files.filter((file) => {
           const name = String(file.name || "").toLowerCase();
-          return file.type === "file" && AUDIO_EXTENSIONS.some((extension) => name.endsWith(extension)) && file.download_url;
-        });
+          const path = String(file.path || "");
+          const lowerPath = path.toLowerCase();
+          return file.type === "blob" && AUDIO_EXTENSIONS.some((extension) => lowerPath.endsWith(extension));
+        }).map((file) => ({
+          name: file.path.split("/").pop(),
+          download_url: MUSIC_RAW_BASE + file.path.split("/").map(encodeURIComponent).join("/")
+        }));
 
         if (!playlist.length) {
-          throw new Error("No hay archivos de audio compatibles en rmbcom/sounds.");
+          throw new Error("No encuentro mp3/wav/ogg/m4a/aac en rmbcom/sounds.");
         }
+
+        messageText.textContent = `${playlist.length} canciones encontradas.`;
       }
 
       async function playRandomTrack() {
@@ -319,9 +329,15 @@
         if (!track) return;
 
         currentTrackUrl = track.download_url;
+        musicAudio.pause();
         musicAudio.src = track.download_url;
         musicAudio.volume = 0.34;
-        await musicAudio.play();
+        musicAudio.load();
+        try {
+          await musicAudio.play();
+        } catch (error) {
+          throw new Error(`No se pudo reproducir "${track.name}": ${error.message}`);
+        }
         messageText.textContent = `Música: ${track.name}`;
       }
 
