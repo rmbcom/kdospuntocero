@@ -310,7 +310,59 @@
       let playerId = localStorage.getItem("buzzerPlayerId") || crypto.randomUUID();
       let activeQuestionId = null;
       let currentQuestion = null;
+      let audioCtx = null;
       localStorage.setItem("buzzerPlayerId", playerId);
+
+      function getAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+      }
+
+      function tone(frequency, start, duration, type = "square", volume = 0.12) {
+        const context = getAudio();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, context.currentTime + start);
+        gain.gain.setValueAtTime(0.0001, context.currentTime + start);
+        gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + start + duration);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(context.currentTime + start);
+        oscillator.stop(context.currentTime + start + duration + 0.02);
+      }
+
+      const sfx = {
+        click() {
+          tone(520, 0, 0.08, "square", 0.08);
+        },
+        enter() {
+          tone(420, 0, 0.08, "square", 0.1);
+          tone(740, 0.08, 0.11, "square", 0.1);
+        },
+        question() {
+          tone(330, 0, 0.08, "sawtooth", 0.09);
+          tone(440, 0.08, 0.08, "sawtooth", 0.09);
+          tone(660, 0.16, 0.13, "sawtooth", 0.09);
+        },
+        answer() {
+          tone(880, 0, 0.07, "square", 0.12);
+          tone(1180, 0.08, 0.12, "square", 0.1);
+        },
+        blocked() {
+          tone(180, 0, 0.18, "sawtooth", 0.11);
+          tone(120, 0.14, 0.22, "sawtooth", 0.09);
+        },
+        finish() {
+          tone(392, 0, 0.12, "triangle", 0.12);
+          tone(523, 0.14, 0.12, "triangle", 0.12);
+          tone(784, 0.3, 0.24, "triangle", 0.12);
+        }
+      };
 
       function playerRef() {
         return ref(db, `rooms/${ROOM_ID}/participants/${playerId}`);
@@ -353,6 +405,7 @@
           leftAt: serverTimestamp()
         });
 
+        sfx.enter();
         showGame();
       }
 
@@ -372,6 +425,7 @@
             <span>${option.text}</span>
           </button>
         `).join("");
+        sfx.question();
 
         get(ref(db, `rooms/${ROOM_ID}/answers/${question.id}/${playerId}`)).then((snapshot) => {
           if (snapshot.exists()) {
@@ -405,8 +459,10 @@
         if (result.committed) {
           lockOptions(optionKey);
           answerStatus.textContent = "RESPUESTA ENVIADA";
+          sfx.answer();
         } else {
           answerStatus.textContent = "YA HABIAS RESPONDIDO";
+          sfx.blocked();
         }
       }
 
@@ -420,6 +476,7 @@
         if (event.key === "Enter") join();
       });
       leaveButton.addEventListener("click", async () => {
+        sfx.click();
         if (username) {
           await update(playerRef(), { active: false, leftAt: serverTimestamp() });
         }
@@ -435,6 +492,7 @@
         if (username && player.active === false && player.removedAt) {
           username = "";
           localStorage.removeItem("buzzerUsername");
+          sfx.blocked();
           showLogin("El moderador te ha eliminado. Puedes entrar de nuevo.");
         }
       });
@@ -450,6 +508,7 @@
           waitingPanel.classList.add("hidden");
           questionPanel.classList.add("hidden");
           finishedPanel.classList.remove("hidden");
+          sfx.finish();
         }
       });
 

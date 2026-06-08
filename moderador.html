@@ -152,6 +152,7 @@
         <h1>KAHOOT_MODE</h1>
         <div class="controls">
           <button id="startButton" class="primary">Iniciar partida</button>
+          <button id="musicButton">Activar música</button>
           <button id="nextButton" class="blue">Siguiente pregunta</button>
           <button id="resultsButton" class="amber">Mostrar resultados</button>
           <button id="resetScoresButton">Reiniciar puntuaciones</button>
@@ -241,6 +242,121 @@
       let answers = {};
       let roomStatus = "lobby";
       let timerInterval = null;
+      let audioCtx = null;
+      let lastAnswerTotal = 0;
+      let answerSoundReady = false;
+      let playlist = [];
+      let currentTrackUrl = "";
+      const musicAudio = new Audio();
+      musicAudio.loop = false;
+      musicAudio.volume = 0.34;
+      const MUSIC_REPO_API = "https://api.github.com/repos/rmbcom/sounds/contents";
+      const AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".aac"];
+
+      function getAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+      }
+
+      function tone(frequency, start, duration, type = "square", volume = 0.12) {
+        duckMusic();
+        const context = getAudio();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, context.currentTime + start);
+        gain.gain.setValueAtTime(0.0001, context.currentTime + start);
+        gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + start + duration);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(context.currentTime + start);
+        oscillator.stop(context.currentTime + start + duration + 0.02);
+      }
+
+      function duckMusic() {
+        if (!musicAudio.src || musicAudio.paused) return;
+        musicAudio.volume = 0.12;
+        window.clearTimeout(duckMusic.timeoutId);
+        duckMusic.timeoutId = window.setTimeout(() => {
+          musicAudio.volume = 0.34;
+        }, 900);
+      }
+
+      function pickRandomTrack() {
+        if (!playlist.length) return null;
+        if (playlist.length === 1) return playlist[0];
+        const candidates = playlist.filter((track) => track.download_url !== currentTrackUrl);
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      async function loadPlaylist() {
+        const response = await fetch(MUSIC_REPO_API, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("No se pudo leer el repositorio de sonidos.");
+        }
+
+        const files = await response.json();
+        playlist = files.filter((file) => {
+          const name = String(file.name || "").toLowerCase();
+          return file.type === "file" && AUDIO_EXTENSIONS.some((extension) => name.endsWith(extension)) && file.download_url;
+        });
+
+        if (!playlist.length) {
+          throw new Error("No hay archivos de audio compatibles en rmbcom/sounds.");
+        }
+      }
+
+      async function playRandomTrack() {
+        if (!playlist.length) await loadPlaylist();
+        const track = pickRandomTrack();
+        if (!track) return;
+
+        currentTrackUrl = track.download_url;
+        musicAudio.src = track.download_url;
+        musicAudio.volume = 0.34;
+        await musicAudio.play();
+        messageText.textContent = `Música: ${track.name}`;
+      }
+
+      const sfx = {
+        click() {
+          tone(520, 0, 0.07, "square", 0.08);
+        },
+        start() {
+          tone(220, 0, 0.1, "sawtooth", 0.1);
+          tone(330, 0.09, 0.1, "sawtooth", 0.1);
+          tone(660, 0.2, 0.16, "sawtooth", 0.1);
+        },
+        question() {
+          tone(440, 0, 0.07, "square", 0.09);
+          tone(660, 0.08, 0.09, "square", 0.1);
+          tone(990, 0.18, 0.1, "square", 0.09);
+        },
+        incomingAnswer() {
+          tone(1040, 0, 0.06, "square", 0.08);
+          tone(1560, 0.045, 0.08, "square", 0.07);
+        },
+        results() {
+          tone(740, 0, 0.12, "triangle", 0.11);
+          tone(554, 0.12, 0.1, "triangle", 0.09);
+          tone(880, 0.25, 0.18, "triangle", 0.1);
+        },
+        reset() {
+          tone(280, 0, 0.08, "sawtooth", 0.08);
+          tone(210, 0.08, 0.12, "sawtooth", 0.08);
+        },
+        remove() {
+          tone(170, 0, 0.18, "sawtooth", 0.1);
+        },
+        finish() {
+          const notes = [392, 523, 659, 784, 1046];
+          notes.forEach((note, index) => tone(note, index * 0.16, 0.22, "triangle", 0.11));
+        }
+      };
 
       function shuffle(items) {
         return [...items].sort(() => Math.random() - 0.5);
@@ -324,6 +440,7 @@
       }
 
       async function startGame() {
+        sfx.start();
         const question = makeQuestion(0);
         await remove(ref(db, `rooms/${ROOM_ID}/answers`));
         await set(ref(db, `rooms/${ROOM_ID}/currentQuestion`), question);
@@ -334,6 +451,8 @@
           questionEndsAt: question.endsAt,
           resetAt: Date.now()
         });
+        lastAnswerTotal = 0;
+        answerSoundReady = true;
       }
 
       async function nextQuestion() {
@@ -343,6 +462,7 @@
           showPodium();
           return;
         }
+        sfx.question();
         const question = makeQuestion(nextIndex);
         await set(ref(db, `rooms/${ROOM_ID}/currentQuestion`), question);
         await update(ref(db, `rooms/${ROOM_ID}`), {
@@ -351,11 +471,14 @@
           questionStartedAt: question.startedAt,
           questionEndsAt: question.endsAt
         });
+        lastAnswerTotal = 0;
+        answerSoundReady = true;
       }
 
       async function showResults() {
         if (!currentQuestion || roomStatus === "results") return;
         if (currentQuestion.scored) return;
+        sfx.results();
         const answerValues = Object.values(answers);
         const updates = {
           [`rooms/${ROOM_ID}/status`]: "results",
@@ -377,6 +500,7 @@
       }
 
       async function resetScores() {
+        sfx.reset();
         const updates = {};
         participants.forEach((player) => updates[`rooms/${ROOM_ID}/participants/${player.id}/score`] = 0);
         await update(ref(db), updates);
@@ -399,18 +523,44 @@
       }
 
       document.querySelector("#startButton").addEventListener("click", startGame);
+      document.querySelector("#musicButton").addEventListener("click", async () => {
+        try {
+          sfx.click();
+          if (!musicAudio.paused) {
+            musicAudio.pause();
+            document.querySelector("#musicButton").textContent = "Activar música";
+            messageText.textContent = "Música pausada.";
+            return;
+          }
+          await playRandomTrack();
+          document.querySelector("#musicButton").textContent = "Pausar música";
+        } catch (error) {
+          messageText.textContent = error.message;
+        }
+      });
       document.querySelector("#nextButton").addEventListener("click", nextQuestion);
       document.querySelector("#resultsButton").addEventListener("click", showResults);
       document.querySelector("#resetScoresButton").addEventListener("click", resetScores);
       document.querySelector("#finishButton").addEventListener("click", async () => {
+        sfx.finish();
         await update(ref(db, `rooms/${ROOM_ID}`), { status: "finished" });
         showPodium();
       });
-      document.querySelector("#closePodiumButton").addEventListener("click", () => podiumOverlay.classList.add("hidden"));
+      document.querySelector("#closePodiumButton").addEventListener("click", () => {
+        sfx.click();
+        podiumOverlay.classList.add("hidden");
+      });
+
+      musicAudio.addEventListener("ended", () => {
+        playRandomTrack().catch((error) => {
+          messageText.textContent = error.message;
+        });
+      });
 
       participantList.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-remove]");
         if (!button) return;
+        sfx.remove();
         await update(ref(db, `rooms/${ROOM_ID}/participants/${button.dataset.remove}`), {
           active: false,
           removedAt: Date.now()
@@ -435,12 +585,21 @@
       onValue(ref(db, `rooms/${ROOM_ID}/currentQuestion`), (snapshot) => {
         currentQuestion = snapshot.val();
         answers = {};
+        lastAnswerTotal = 0;
+        answerSoundReady = roomStatus === "question";
         renderQuestion();
         startTimer();
       });
 
       onValue(ref(db, `rooms/${ROOM_ID}/answers`), (snapshot) => {
         answers = currentQuestion ? (snapshot.child(currentQuestion.id).val() || {}) : {};
+        const total = Object.keys(answers).length;
+        if (answerSoundReady && roomStatus === "question" && total > lastAnswerTotal) {
+          for (let i = lastAnswerTotal; i < total; i += 1) {
+            setTimeout(() => sfx.incomingAnswer(), (i - lastAnswerTotal) * 90);
+          }
+        }
+        lastAnswerTotal = total;
         renderQuestion();
       });
 
