@@ -147,15 +147,59 @@
         margin-bottom: 22px;
       }
 
-      .score {
+      .player-stats {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        position: sticky;
+        top: 14px;
+        z-index: 4;
+      }
+
+      .score,
+      .rank {
         border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 10px 14px;
+        padding: 10px 16px;
         color: var(--amber);
-        background: rgba(255, 209, 102, 0.08);
-        font-size: 1.25rem;
+        background: linear-gradient(135deg, rgba(255, 209, 102, 0.18), rgba(57, 255, 136, 0.08));
+        box-shadow: 0 0 22px rgba(255, 209, 102, 0.12);
+        font-size: clamp(1.2rem, 4vw, 1.9rem);
         font-weight: 900;
         white-space: nowrap;
+        min-width: 128px;
+        text-align: center;
+      }
+
+      .rank {
+        color: var(--cyan);
+        background: linear-gradient(135deg, rgba(32, 227, 255, 0.16), rgba(57, 255, 136, 0.08));
+        box-shadow: 0 0 22px rgba(32, 227, 255, 0.12);
+        min-width: 110px;
+      }
+
+      .score::before,
+      .rank::before {
+        content: "MARCADOR";
+        display: block;
+        margin-bottom: 2px;
+        color: var(--muted);
+        font-size: 0.64rem;
+        letter-spacing: 0;
+      }
+
+      .rank::before {
+        content: "PUESTO";
+      }
+
+      .score.bump {
+        animation: scoreBump 520ms ease;
+      }
+
+      @keyframes scoreBump {
+        0% { transform: scale(1); box-shadow: 0 0 22px rgba(255, 209, 102, 0.12); }
+        45% { transform: scale(1.08); box-shadow: 0 0 36px rgba(255, 209, 102, 0.42); }
+        100% { transform: scale(1); box-shadow: 0 0 22px rgba(255, 209, 102, 0.12); }
       }
 
       .status {
@@ -213,6 +257,8 @@
       @media (max-width: 680px) {
         .options { grid-template-columns: 1fr; }
         .topbar { align-items: flex-start; flex-direction: column; }
+        .player-stats { width: 100%; }
+        .score, .rank { flex: 1; min-width: 0; }
       }
     </style>
   </head>
@@ -237,7 +283,10 @@
             <p class="eyebrow" id="playerName">PARTICIPANTE</p>
             <h1 style="font-size: clamp(2rem, 7vw, 4rem)">QUIZ_MODE</h1>
           </div>
-          <div class="score" id="playerScore">0 PTS</div>
+          <div class="player-stats">
+            <div class="score" id="playerScore">0 PTS</div>
+            <div class="rank" id="playerRank">#-</div>
+          </div>
         </div>
 
         <section id="waitingPanel">
@@ -297,6 +346,7 @@
       const loginError = document.querySelector("#loginError");
       const playerName = document.querySelector("#playerName");
       const playerScore = document.querySelector("#playerScore");
+      const playerRank = document.querySelector("#playerRank");
       const waitingPanel = document.querySelector("#waitingPanel");
       const questionPanel = document.querySelector("#questionPanel");
       const finishedPanel = document.querySelector("#finishedPanel");
@@ -311,6 +361,7 @@
       let activeQuestionId = null;
       let currentQuestion = null;
       let audioCtx = null;
+      let lastRenderedScore = null;
       localStorage.setItem("buzzerPlayerId", playerId);
 
       function getAudio() {
@@ -488,13 +539,35 @@
       onValue(playerRef(), (snapshot) => {
         const player = snapshot.val();
         if (!player) return;
-        playerScore.textContent = `${player.score || 0} PTS`;
+        const score = Number(player.score) || 0;
+        playerScore.textContent = `${score} PTS`;
+        if (lastRenderedScore !== null && score !== lastRenderedScore) {
+          playerScore.classList.remove("bump");
+          void playerScore.offsetWidth;
+          playerScore.classList.add("bump");
+        }
+        lastRenderedScore = score;
         if (username && player.active === false && player.removedAt) {
           username = "";
           localStorage.removeItem("buzzerUsername");
           sfx.blocked();
           showLogin("El moderador te ha eliminado. Puedes entrar de nuevo.");
         }
+      });
+
+      onValue(ref(db, `rooms/${ROOM_ID}/participants`), (snapshot) => {
+        const ranking = [];
+        snapshot.forEach((child) => {
+          const player = child.val();
+          if (player?.active) ranking.push({ ...player, id: child.key });
+        });
+
+        ranking.sort((a, b) => {
+          return (Number(b.score) || 0) - (Number(a.score) || 0) || String(a.name || "").localeCompare(String(b.name || ""));
+        });
+
+        const rankIndex = ranking.findIndex((player) => player.id === playerId);
+        playerRank.textContent = rankIndex >= 0 ? `#${rankIndex + 1}` : "#-";
       });
 
       onValue(ref(db, `rooms/${ROOM_ID}/status`), (snapshot) => {
