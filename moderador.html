@@ -139,11 +139,34 @@
       .third { min-height: 145px; background: #f97316; color: white; }
       .podium-name { font-size: clamp(1.8rem, 5vw, 4rem); overflow-wrap: anywhere; }
       .final-ranking { margin-top: 22px; padding: 0; list-style: none; display: grid; gap: 8px; }
+      .performance-report { margin-top: 28px; display: grid; gap: 10px; }
+      .performance-row {
+        border: 1px solid rgba(57,255,136,.22);
+        border-radius: 8px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: minmax(150px, 1.4fr) repeat(5, minmax(70px, .7fr));
+        gap: 8px;
+        align-items: center;
+        background: rgba(217,255,231,.92);
+        color: #07130c;
+        font-weight: 900;
+      }
+      .performance-row.header {
+        background: rgba(57,255,136,.18);
+        color: var(--green);
+        text-transform: uppercase;
+        font-size: .82rem;
+      }
+      .performance-name { overflow-wrap: anywhere; }
+      .performance-pill { border-radius: 999px; padding: 6px 8px; text-align: center; background: rgba(0,0,0,.08); }
 
       @media (max-width: 960px) {
         main { grid-template-columns: 1fr; }
         .options { grid-template-columns: 1fr; }
         .podium { grid-template-columns: 1fr; }
+        .performance-row { grid-template-columns: 1fr 1fr; }
+        .performance-row.header { display: none; }
       }
     </style>
   </head>
@@ -196,6 +219,7 @@
         <div class="podium-card third"><div>3º</div><div class="podium-name" id="thirdName">-</div><div id="thirdScore">0 pts</div></div>
       </div>
       <ol class="final-ranking" id="finalRanking"></ol>
+      <div class="performance-report" id="performanceReport"></div>
       <button id="closePodiumButton">Volver al moderador</button>
     </section>
 
@@ -245,6 +269,7 @@
       const rankingList = document.querySelector("#rankingList");
       const podiumOverlay = document.querySelector("#podiumOverlay");
       const finalRanking = document.querySelector("#finalRanking");
+      const performanceReport = document.querySelector("#performanceReport");
 
       let participants = [];
       let currentQuestion = null;
@@ -388,6 +413,15 @@
         return [...items].sort(() => Math.random() - 0.5);
       }
 
+      function escapeHtml(value = "") {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
       function normalizeQuestion(raw) {
         return {
           pregunta: raw.pregunta || raw.question || "",
@@ -519,7 +553,7 @@
         const nextIndex = (currentQuestion?.index ?? -1) + 1;
         if (nextIndex >= questions.length) {
           await update(ref(db, `rooms/${ROOM_ID}`), { status: "finished" });
-          showPodium();
+          await showPodium();
           return;
         }
         sfx.question();
@@ -550,12 +584,16 @@
 
         await update(ref(db), updates);
         answers = freshAnswers;
-        messageText.textContent = `Respuesta correcta: ${question.correctKey}. Aciertos: ${correctAnswers}/${answerValues.length}`;
+        messageText.textContent = `Respuesta correcta: ${question.correctKey}. Aciertos: ${correctAnswers}/${answerValues.length}. Puntuación: 300 base + tiempo + bonus de orden.`;
       }
 
       async function scorePendingAnswers() {
         if (!currentQuestion || !answers || roomStatus !== "question") return;
         const entries = Object.entries(answers);
+        const answerOrder = entries
+          .filter(([, answer]) => answer?.answeredAt)
+          .sort(([, a], [, b]) => a.answeredAt - b.answeredAt)
+          .map(([playerId]) => playerId);
         await Promise.all(entries.map(async ([playerId, answer]) => {
           const scoringId = `${currentQuestion.id}/${playerId}`;
           if (!answer || answer.scored || scoringAnswerIds.has(scoringId)) return;
@@ -564,7 +602,10 @@
           const isCorrect = answer.optionKey === currentQuestion.correctKey;
           const elapsed = Math.max(0, answer.answeredAt - currentQuestion.startedAt);
           const ratio = Math.max(0, 1 - elapsed / QUESTION_TIME);
-          const points = isCorrect ? Math.round(10 + ratio * 10) : 0;
+          const answerRank = answerOrder.indexOf(playerId);
+          const orderBonus = answerRank === 0 ? 300 : answerRank === 1 ? 200 : answerRank === 2 ? 100 : 0;
+          const timeBonus = Math.round(ratio * 500);
+          const points = isCorrect ? 300 + timeBonus + orderBonus : 0;
 
           try {
             if (points > 0) {
@@ -592,7 +633,65 @@
         messageText.textContent = "Puntuaciones reiniciadas.";
       }
 
-      function showPodium() {
+      function buildPerformanceReport(allAnswers) {
+        const answerGroups = Object.values(allAnswers || {});
+        const askedFromAnswers = answerGroups.length;
+        const askedFromCurrent = Number.isFinite(Number(currentQuestion?.index)) ? Number(currentQuestion.index) + 1 : 0;
+        const totalAsked = Math.max(askedFromAnswers, askedFromCurrent, 0);
+        const rows = participants.map((player) => {
+          let answered = 0;
+          let correct = 0;
+          let wrong = 0;
+          let points = Number(player.score) || 0;
+
+          answerGroups.forEach((group) => {
+            const answer = group?.[player.id];
+            if (!answer) return;
+            answered += 1;
+            if (answer.correct === true) correct += 1;
+            else wrong += 1;
+            if (!points && Number(answer.points)) points += Number(answer.points);
+          });
+
+          const unanswered = Math.max(0, totalAsked - answered);
+          const percent = totalAsked ? Math.round((correct / totalAsked) * 100) : 0;
+          return {
+            name: player.name,
+            score: Number(player.score) || points,
+            correct,
+            wrong,
+            unanswered,
+            percent
+          };
+        }).sort((a, b) => b.score - a.score || b.correct - a.correct || a.name.localeCompare(b.name));
+
+        performanceReport.innerHTML = `
+          <p class="eyebrow">INFORME DE RENDIMIENTO</p>
+          <div class="performance-row header">
+            <span>Jugador</span><span>Aciertos</span><span>Fallos</span><span>Sin resp.</span><span>% acierto</span><span>Puntos</span>
+          </div>
+          ${rows.length ? rows.map((row) => `
+            <div class="performance-row">
+              <span class="performance-name">${escapeHtml(row.name)}</span>
+              <span class="performance-pill">${row.correct}</span>
+              <span class="performance-pill">${row.wrong}</span>
+              <span class="performance-pill">${row.unanswered}</span>
+              <span class="performance-pill">${row.percent}%</span>
+              <span class="performance-pill">${row.score}</span>
+            </div>
+          `).join("") : `<p class="terminal">No hay jugadores para mostrar.</p>`}
+          <p class="terminal">Preguntas contabilizadas: ${totalAsked}. Los porcentajes incluyen las no respondidas como no acertadas.</p>
+        `;
+      }
+
+      async function showPodium() {
+        const participantsSnapshot = await get(ref(db, `rooms/${ROOM_ID}/participants`));
+        const freshParticipants = [];
+        participantsSnapshot.forEach((child) => {
+          const player = child.val();
+          if (player?.active) freshParticipants.push({ ...player, id: child.key });
+        });
+        if (freshParticipants.length) participants = freshParticipants;
         const ranking = [...participants].sort((a, b) => (b.score || 0) - (a.score || 0) || a.name.localeCompare(b.name));
         const [first, second, third] = ranking;
         document.querySelector("#firstName").textContent = first?.name || "-";
@@ -602,8 +701,10 @@
         document.querySelector("#thirdName").textContent = third?.name || "-";
         document.querySelector("#thirdScore").textContent = `${third?.score || 0} pts`;
         finalRanking.innerHTML = ranking.map((player, index) => `
-          <li><span>#${index + 1} ${player.name}</span><span></span><span>${player.score || 0} pts</span></li>
+          <li><span>#${index + 1} ${escapeHtml(player.name)}</span><span></span><span>${player.score || 0} pts</span></li>
         `).join("");
+        const answersSnapshot = await get(ref(db, `rooms/${ROOM_ID}/answers`));
+        buildPerformanceReport(answersSnapshot.val() || {});
         podiumOverlay.classList.remove("hidden");
       }
 
@@ -637,8 +738,9 @@
       document.querySelector("#resetScoresButton").addEventListener("click", resetScores);
       document.querySelector("#finishButton").addEventListener("click", async () => {
         sfx.finish();
+        if (roomStatus === "question") await scorePendingAnswers();
         await update(ref(db, `rooms/${ROOM_ID}`), { status: "finished" });
-        showPodium();
+        await showPodium();
       });
       document.querySelector("#closePodiumButton").addEventListener("click", () => {
         sfx.click();
