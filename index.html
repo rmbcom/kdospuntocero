@@ -289,6 +289,26 @@
         margin-top: 18px;
       }
 
+      .question-media {
+        margin: 16px 0 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(0,0,0,.42);
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        max-height: 320px;
+      }
+
+      .question-media img {
+        width: 100%;
+        max-height: 320px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .question-media.hidden { display: none; }
+
       .option {
         min-height: 96px;
         display: flex;
@@ -371,6 +391,7 @@
         <section id="questionPanel" class="hidden">
           <p class="eyebrow" id="questionMeta">PREGUNTA</p>
           <h2 id="questionText"></h2>
+          <div class="question-media hidden" id="questionImageBox"><img id="questionImage" alt="Imagen de la pregunta"></div>
           <div class="options" id="options"></div>
           <p class="terminal" id="answerStatus">Selecciona una respuesta.</p>
         </section>
@@ -426,6 +447,8 @@
       const finishedPanel = document.querySelector("#finishedPanel");
       const questionMeta = document.querySelector("#questionMeta");
       const questionText = document.querySelector("#questionText");
+      const questionImageBox = document.querySelector("#questionImageBox");
+      const questionImage = document.querySelector("#questionImage");
       const options = document.querySelector("#options");
       const answerStatus = document.querySelector("#answerStatus");
       const leaveButton = document.querySelector("#leaveButton");
@@ -543,6 +566,8 @@
         questionPanel.classList.remove("hidden");
         questionMeta.textContent = `PREGUNTA ${question.index + 1}`;
         questionText.textContent = question.pregunta;
+        questionImageBox.classList.toggle("hidden", !question.image);
+        if (question.image) questionImage.src = question.image;
         answerStatus.textContent = "Selecciona una respuesta.";
 
         options.innerHTML = question.options.map((option) => `

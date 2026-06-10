@@ -1,60 +1,81 @@
-# Buzzer con GitHub Pages + Firebase
+# Pseudokahoot v3 con Firebase
 
-Esta version no usa Apps Script ni Google Sheets.
+Aplicacion tipo Kahoot con estetica hacker/Matrix y Firebase Realtime Database.
 
-- `index.html`: app de participante, pensada para GitHub Pages.
+Archivos:
+
+- `index.html`: app de participantes.
 - `moderador.html`: pantalla del moderador.
+- `cargador.html`: app para cargar preguntas con imagen opcional.
+- `questions.js`: banco de preguntas local de respaldo.
 - `database.rules.json`: reglas simples para probar rapido.
 
-## Paso 1: Crear Firebase
+## URLs si lo subes a GitHub Pages
 
-1. Entra en `https://console.firebase.google.com/`.
-2. Crea un proyecto.
-3. En el proyecto, crea una app web.
-4. Copia la configuracion `firebaseConfig`.
-5. Ve a `Realtime Database`.
-6. Crea una base de datos.
-7. Elige una region cercana.
-8. Empieza en modo prueba o pega las reglas de `database.rules.json`.
-
-## Paso 2: Pegar configuracion
-
-En `index.html` y `moderador.html`, reemplaza:
-
-```js
-const firebaseConfig = {
-  apiKey: "PEGA_AQUI_TU_API_KEY",
-  authDomain: "PEGA_AQUI_TU_AUTH_DOMAIN",
-  databaseURL: "PEGA_AQUI_TU_DATABASE_URL",
-  projectId: "PEGA_AQUI_TU_PROJECT_ID",
-  storageBucket: "PEGA_AQUI_TU_STORAGE_BUCKET",
-  messagingSenderId: "PEGA_AQUI_TU_MESSAGING_SENDER_ID",
-  appId: "PEGA_AQUI_TU_APP_ID"
-};
-```
-
-por la configuracion real que te da Firebase.
-
-## Paso 3: Publicar participante en GitHub Pages
-
-Sube `index.html` a la raiz de tu repositorio `buzzer-concurso`.
-
-La URL sera algo como:
+Participantes:
 
 ```text
-https://rmbcom.github.io/buzzer-concurso/
+https://TU_USUARIO.github.io/TU_REPO/
 ```
 
-## Paso 4: Usar el moderador
-
-Puedes abrir `moderador.html` localmente en el ordenador del presentador, o subirlo tambien a GitHub con otro nombre:
+Moderador:
 
 ```text
-https://rmbcom.github.io/buzzer-concurso/moderador.html
+https://TU_USUARIO.github.io/TU_REPO/moderador.html
 ```
 
-Pulsa `Activar sonido` antes de empezar.
+Cargador de preguntas:
 
-## Nota de seguridad
+```text
+https://TU_USUARIO.github.io/TU_REPO/cargador.html
+```
 
-Las reglas incluidas son abiertas para ir rapido. Para un uso cerrado, conviene anadir autenticacion anonima o limitar escrituras por sala.
+## Como usar el cargador
+
+1. Abre `cargador.html`.
+2. Escribe la pregunta.
+3. Escribe la respuesta correcta.
+4. Escribe tres respuestas falsas.
+5. Opcionalmente, sube una imagen.
+6. Pulsa **Anadir pregunta**.
+7. Repite con todas las preguntas.
+8. Pulsa **Publicar banco**.
+9. Abre `moderador.html` e inicia partida.
+
+El banco se guarda en Firebase en:
+
+```text
+rooms/principal/questionBank
+```
+
+## Imagenes
+
+El cargador reduce las imagenes a un maximo aproximado de 900 px y las guarda como base64 dentro de Firebase.
+
+Para clase o pruebas funciona bien. Para bancos enormes o muchas imagenes pesadas, convendria usar Firebase Storage o URLs externas.
+
+## Banco de respaldo
+
+Si no hay preguntas publicadas en Firebase, el moderador usa `questions.js`.
+
+Tambien puedes usar el boton **Descargar questions.js** del cargador para generar un archivo de preguntas y sustituir manualmente el `questions.js` del repositorio.
+
+## Firebase
+
+La app usa:
+
+```text
+rooms/principal
+```
+
+Campos importantes:
+
+- `participants`
+- `currentQuestion`
+- `answers`
+- `questionBank`
+- `status`
+
+## Seguridad
+
+Las reglas incluidas son abiertas para ir rapido. Cualquiera con acceso a las URLs podria leer o escribir datos. Para uso cerrado haria falta Firebase Authentication y reglas con roles.

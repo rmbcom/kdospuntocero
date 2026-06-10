@@ -1,45 +1,45 @@
-﻿window.QUIZ_QUESTIONS = [
+window.QUIZ_QUESTIONS = [
   {
-    "pregunta": "Â¿Quien descubrio, en 1665, la celula al observar por el microscopio una laminilla de corcho?",
+    "pregunta": "¿Quién descubrió, en 1665, la célula al observar por el microscopio una laminilla de corcho?",
     "opcion_correcta": "Robert Hooke.",
     "opcion_falsa_1": "Albert Einstein.",
-    "opcion_falsa_2": "Gregor Mendell.",
+    "opcion_falsa_2": "Gregor Mendel.",
     "opcion_falsa_3": "Charles Darwin."
   },
   {
-    "pregunta": "Una celula es...",
-    "opcion_correcta": "La forma de vida mas pequeÃ±a.",
-    "opcion_falsa_1": "Un conjunto de organos que cumplen una misma funcion.",
-    "opcion_falsa_2": "Un conjunto de seres vivos que tienen una funcion comun.",
-    "opcion_falsa_3": "Un trozo de codigo que sirve para que nuestros organos \"sepan\" constituirse."
+    "pregunta": "Una célula es...",
+    "opcion_correcta": "La forma de vida más pequeña.",
+    "opcion_falsa_1": "Un conjunto de órganos que cumplen una misma función.",
+    "opcion_falsa_2": "Un conjunto de seres vivos que tienen una función común.",
+    "opcion_falsa_3": "Un trozo de código que sirve para que nuestros órganos \"sepan\" constituirse."
   },
   {
     "pregunta": "Todos los seres vivos...",
-    "opcion_correcta": "Estan formados, por una o mas celulas.",
-    "opcion_falsa_1": "Estan formados unicamente por una celula.",
-    "opcion_falsa_2": "Estan formados, siempre, por muchas celulas.",
-    "opcion_falsa_3": "Estan formados, al menos, por dos celulas."
+    "opcion_correcta": "Están formados por una o más células.",
+    "opcion_falsa_1": "Están formados únicamente por una célula.",
+    "opcion_falsa_2": "Están formados, siempre, por muchas células.",
+    "opcion_falsa_3": "Están formados, al menos, por dos células."
   },
   {
-    "pregunta": "Una celula se forma:",
-    "opcion_correcta": "Mediante la division de otras celulas ya existentes.",
+    "pregunta": "Una célula se forma:",
+    "opcion_correcta": "Mediante la división de otras células ya existentes.",
     "opcion_falsa_1": "A partir de agua, amoniaco y calor.",
-    "opcion_falsa_2": "Por la union de un virus y una bacteria.",
-    "opcion_falsa_3": "Mediante un proceso llamado fotosintesis."
+    "opcion_falsa_2": "Por la unión de un virus y una bacteria.",
+    "opcion_falsa_3": "Mediante un proceso llamado fotosíntesis."
   },
   {
     "pregunta": "Las neuronas son...",
-    "opcion_correcta": "Un tipo de celulas con forma estrellada que son parte del sistema nervioso.",
-    "opcion_falsa_1": "Organos que tenemos en el cerebro y estan formados por millones de celulas.",
-    "opcion_falsa_2": "Uniones de celulas oseas con leucocitos.",
+    "opcion_correcta": "Un tipo de células con forma estrellada que son parte del sistema nervioso.",
+    "opcion_falsa_1": "Órganos que tenemos en el cerebro y están formados por millones de células.",
+    "opcion_falsa_2": "Uniones de células óseas con leucocitos.",
     "opcion_falsa_3": "Visibles a simple vista."
   },
   {
-    "pregunta": "Las celulas procariotas...",
-    "opcion_correcta": "Tienen un nucleo definido, a diferencia de las eucariotas.",
-    "opcion_falsa_1": "No tienen un nucleo definido, a diferencia de las eucariotas.",
-    "opcion_falsa_2": "No tienen un nucleo definido, al igual que las eucariotas.",
-    "opcion_falsa_3": "Tienen un nucleo definido, al igual que las eucariotas."
+    "pregunta": "Las células procariotas...",
+    "opcion_correcta": "Tienen un núcleo definido, a diferencia de las eucariotas.",
+    "opcion_falsa_1": "No tienen un núcleo definido, a diferencia de las eucariotas.",
+    "opcion_falsa_2": "No tienen un núcleo definido, al igual que las eucariotas.",
+    "opcion_falsa_3": "Tienen un núcleo definido, al igual que las eucariotas."
   },
   {
     "pregunta": "El ciclo celular consta de dos grandes fases:",
@@ -49,49 +49,49 @@
     "opcion_falsa_3": "La fase creciente y la menguante."
   },
   {
-    "pregunta": "Las funciones cuya expresion es un polinomio de grado 2 son las:",
-    "opcion_correcta": "Cuadraticas.",
+    "pregunta": "Las funciones cuya expresión es un polinomio de grado 2 son las:",
+    "opcion_correcta": "Cuadráticas.",
     "opcion_falsa_1": "Lineales.",
     "opcion_falsa_2": "Inversas.",
     "opcion_falsa_3": "Afines."
   },
   {
-    "pregunta": "Las funciones cuya expresion es un polinomio de grado 1 son las:",
+    "pregunta": "Las funciones cuya expresión es un polinomio de grado 1 son las:",
     "opcion_correcta": "Lineales y afines.",
-    "opcion_falsa_1": "Cuadraticas.",
+    "opcion_falsa_1": "Cuadráticas.",
     "opcion_falsa_2": "Inversas.",
-    "opcion_falsa_3": "Logaritmicas."
+    "opcion_falsa_3": "Logarítmicas."
   },
   {
     "pregunta": "Las funciones de la forma f(x) = a/x son conocidas como funciones:",
     "opcion_correcta": "Inversas.",
-    "opcion_falsa_1": "Cuadraticas.",
+    "opcion_falsa_1": "Cuadráticas.",
     "opcion_falsa_2": "Lineales.",
     "opcion_falsa_3": "Afines."
   },
   {
-    "pregunta": "Evalua la funcion f(x) = 1/x en el punto x = 1, Â¿cual es su valor?",
+    "pregunta": "Evalúa la función f(x) = 1/x en el punto x = 1, ¿cuál es su valor?",
     "opcion_correcta": "1",
     "opcion_falsa_1": "1/2",
     "opcion_falsa_2": "0",
     "opcion_falsa_3": "2"
   },
   {
-    "pregunta": "Evalua la funcion f(x) = 1/x en el punto x = 0, Â¿cual es su valor?",
-    "opcion_correcta": "Justo en el punto x = 0 no toma ningun valor.",
+    "pregunta": "Evalúa la función f(x) = 1/x en el punto x = 0, ¿cuál es su valor?",
+    "opcion_correcta": "Justo en el punto x = 0 no toma ningún valor.",
     "opcion_falsa_1": "1",
     "opcion_falsa_2": "0",
     "opcion_falsa_3": "2"
   },
   {
-    "pregunta": "Â¿Para que valor de x la funcion f(x) = 1/x corta la funcion al eje horizontal?",
+    "pregunta": "¿Para qué valor de x la función f(x) = 1/x corta al eje horizontal?",
     "opcion_correcta": "No toca nunca al eje horizontal.",
     "opcion_falsa_1": "1",
-    "opcion_falsa_2": "Justo en el punto x = 1 no toma ningun valor.",
+    "opcion_falsa_2": "Justo en el punto x = 1 no toma ningún valor.",
     "opcion_falsa_3": "0"
   },
   {
-    "pregunta": "Necesito abonar una finca de 2 hectareas, lo mismo que 2 hmÂ², echando 1 kg de nitrato de potasio, KNO3, por metro cuadrado.",
+    "pregunta": "Necesito abonar una finca de 2 hectáreas, lo mismo que 2 hm², echando 1 kg de nitrato de potasio, KNO3, por metro cuadrado.",
     "opcion_correcta": "Necesito 2 toneladas de abono, 20 mil kilogramos.",
     "opcion_falsa_1": "Necesito 20 toneladas de abono, 20 mil kilogramos.",
     "opcion_falsa_2": "Necesito 10 toneladas de abono, 10 mil kilogramos.",
@@ -99,52 +99,51 @@
   },
   {
     "pregunta": "Necesito abonar una finca circular, pero solo tengo 10 sacos de 20 kg de abono.",
-    "opcion_correcta": "Si toca a 1 kg/mÂ², el radio sera âˆš(200/Ï€) metros.",
-    "opcion_falsa_1": "Si toca a 1 kg/mÂ², el radio sera de 10 metros.",
-    "opcion_falsa_2": "Si toca a 1 kg/mÂ², el radio sera de 100 metros.",
-    "opcion_falsa_3": "Si toca a 1 kg/mÂ², el radio sera de 1 metro."
+    "opcion_correcta": "Si toca a 1 kg/m², el radio será √(200/π) metros.",
+    "opcion_falsa_1": "Si toca a 1 kg/m², el radio será de 10 metros.",
+    "opcion_falsa_2": "Si toca a 1 kg/m², el radio será de 100 metros.",
+    "opcion_falsa_3": "Si toca a 1 kg/m², el radio será de 1 metro."
   },
   {
-    "pregunta": "Â¿Cuantas cubas de 10 mil litros necesitamos para regar 3 Ha si queremos echar 10 litros/metro?",
+    "pregunta": "¿Cuántas cubas de 10 mil litros necesitamos para regar 3 ha si queremos echar 10 litros/metro?",
     "opcion_correcta": "30 cubas.",
     "opcion_falsa_1": "2 cubas.",
     "opcion_falsa_2": "10 cubas.",
     "opcion_falsa_3": "5 cubas."
   },
   {
-    "pregunta": "Si tengo un chip en el que los componentes miden aproximadamente 7 nm, nanometros...",
-    "opcion_correcta": "Su tamaÃ±o es de 7 Â· 10^-9 m.",
-    "opcion_falsa_1": "Su tamaÃ±o es de 7 Â· 10^-10 m.",
-    "opcion_falsa_2": "Su tamaÃ±o es de 7 Â· 10^-6 m.",
-    "opcion_falsa_3": "Su tamaÃ±o es de 7 Â· 10^-8 m."
+    "pregunta": "Si tengo un chip en el que los componentes miden aproximadamente 7 nm, nanómetros...",
+    "opcion_correcta": "Su tamaño es de 7 · 10^-9 m.",
+    "opcion_falsa_1": "Su tamaño es de 7 · 10^-10 m.",
+    "opcion_falsa_2": "Su tamaño es de 7 · 10^-6 m.",
+    "opcion_falsa_3": "Su tamaño es de 7 · 10^-8 m."
   },
   {
-    "pregunta": "Una celula del tamaÃ±o de 300 Î¼m mide:",
+    "pregunta": "Una célula del tamaño de 300 μm mide:",
     "opcion_correcta": "0,3 mm.",
     "opcion_falsa_1": "30 mm.",
     "opcion_falsa_2": "3000 mm.",
     "opcion_falsa_3": "3 mm."
   },
   {
-    "pregunta": "Si un invernadero se mantiene a una temperatura constante de 18 ÂºC, Â¿que tipo de funcion representa la temperatura con respecto al tiempo?",
-    "opcion_correcta": "Funcion constante.",
-    "opcion_falsa_1": "Funcion cuadratica.",
-    "opcion_falsa_2": "Funcion inversa.",
-    "opcion_falsa_3": "Funcion exponencial."
+    "pregunta": "Si un invernadero se mantiene a una temperatura constante de 18 ºC, ¿qué tipo de función representa la temperatura con respecto al tiempo?",
+    "opcion_correcta": "Función constante.",
+    "opcion_falsa_1": "Función cuadrática.",
+    "opcion_falsa_2": "Función inversa.",
+    "opcion_falsa_3": "Función exponencial."
   },
   {
-    "pregunta": "Cada planta produce 0,5 kg de fresas y cada kg de fresas nos lo compran por 50 centimos. Â¿Que tipo de funcion representa el beneficio en funcion del numero de plantas?",
-    "opcion_correcta": "Funcion lineal proporcional.",
-    "opcion_falsa_1": "Funcion inversa.",
-    "opcion_falsa_2": "Funcion cuadratica.",
-    "opcion_falsa_3": "Funcion constante."
+    "pregunta": "Cada planta produce 0,5 kg de fresas y cada kg de fresas nos lo compran por 50 céntimos. ¿Qué tipo de función representa el beneficio en función del número de plantas?",
+    "opcion_correcta": "Función lineal proporcional.",
+    "opcion_falsa_1": "Función inversa.",
+    "opcion_falsa_2": "Función cuadrática.",
+    "opcion_falsa_3": "Función constante."
   },
   {
-    "pregunta": "Â¿Que tipo de funcion representa la cantidad de plantas que se pueden poner en un terreno cuadrado en funcion del lado del cuadrado?",
-    "opcion_correcta": "Funcion cuadratica.",
-    "opcion_falsa_1": "Funcion afin.",
-    "opcion_falsa_2": "Funcion constante.",
-    "opcion_falsa_3": "Funcion inversa."
+    "pregunta": "¿Qué tipo de función representa la cantidad de plantas que se pueden poner en un terreno cuadrado en función del lado del cuadrado?",
+    "opcion_correcta": "Función cuadrática.",
+    "opcion_falsa_1": "Función afín.",
+    "opcion_falsa_2": "Función constante.",
+    "opcion_falsa_3": "Función inversa."
   }
-]
-;
+];
